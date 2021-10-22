@@ -38,4 +38,4 @@ module "my_static_site" {
 
 ## License
 
-TBD
+[CC0 1.0 Universal](LICENSE)
