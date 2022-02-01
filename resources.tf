@@ -1,5 +1,3 @@
-## The locals concat thing is here - https://github.com/hashicorp/terraform/issues/16044
-
 locals {
   domain_list      = var.domain_list
   primary_domain   = var.domain_list[0]
@@ -10,6 +8,9 @@ locals {
 
 resource "aws_cloudfront_origin_access_identity" "staticsite-oai" {
   comment = var.oai_comment
+  lifecycle {
+    ignore_changes = [etag]
+  }
 }
 
 resource "aws_acm_certificate" "staticsite-acm-cert" {
