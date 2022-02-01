@@ -1,36 +1,57 @@
-<!-- Docs example - https://github.com/terraform-aws-modules/terraform-aws-security-group/blob/master/README.md -->
-
 # AWS Static Website w/ CloudFront Distribution, ACM Cert, and IAM User
 
-Terraform module to create a static website with S3 bucket, Cloudfront distribution, ACM TLS certificate, and IAM user for deployments
+Want to host a static website on AWS simply and (theoretically) cheaply? Let S3, CloudFront, ACM, and Route 53 do the magic for you with this module.
 
 ## Features
 
+- S3 bucket
+  - IAM user with permissions to S3 Bucket
+- CloudFront distribution
+- ACM TLS certificates
+- Route 53 records
+- Automatic certificate verification via Route 53
+- Lambda@Edge to handle `index.html` in subdirectories
+
 ## Terraform versions
 
-## Usage
+I've tested this on 0.13 onward, and seems to be fine. If you find an issue, feel free to raise an issue.
 
-### Example
+### Example Usage
 
 ```hcl
-module "my_static_site" {
-    source = ""
+# Production Website
+module "prod_website" {
+  source          = "../../modules/aws_static_site"
+  staticsite_name = "Production Website"
+  aws_region      = "us-west-2"
+  oai_comment     = "prod-website-oai"
+  domain_list = [
+    "www.example.com",
+    "prod.example.com",
+    "example.com"
+  ]
+  s3_bucket_name = "mycompany-website-prod"
+  tags = {
+    pizza     = "pepperoni"
+    doughnuts = "magic"
+  }
+  index_document           = "index.html"
+  error_document           = "404.html"
+  dns_zone_id              = aws_route53_zone.example_com.id
+  deployer_iam_user        = true
+  deployer_iam_user_name   = "prod-website-deployer"
+  cloudfront_index_handler = true
 }
 ```
 
-## Known Issues
-
-## Requirements
-
 ## Providers
 
-## Modules
-
-## Resources
-
-## Inputs
+- [AWS](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 
 ## Outputs
+
+- `deployer_creds`: When this and `deployer_iam_user` are set to `true`, Outputs the `access_key` and `secret_key` of the created IAM user.
+  - Note: If `deployer_iam_user` is set to false, this will render as `undefined`
 
 ## Authors
 
