@@ -136,6 +136,10 @@ resource "aws_s3_bucket" "staticsite-s3" {
     index_document = var.index_document
     error_document = var.error_document
   }
+}
+
+resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
+  bucket = aws_s3_bucket.staticsite-s3
 
   cors_rule {
     allowed_headers = [
