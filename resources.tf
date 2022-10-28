@@ -8,9 +8,6 @@ locals {
 
 resource "aws_cloudfront_origin_access_identity" "staticsite-oai" {
   comment = var.oai_comment
-  lifecycle {
-    ignore_changes = [etag]
-  }
 }
 
 resource "aws_acm_certificate" "staticsite-acm-cert" {
