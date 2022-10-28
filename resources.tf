@@ -129,10 +129,6 @@ resource "aws_s3_bucket" "staticsite-s3" {
     }
   )
 
-  website {
-    index_document = var.index_document
-    error_document = var.error_document
-  }
 }
 
 resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
@@ -156,7 +152,14 @@ resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
 resource "aws_s3_bucket_acl" "staticsite-s3" {
   bucket = var.s3_bucket_name
   acl    = "private"
+}
 
+resource "aws_s3_website_configuration" "staticsite-s3" {
+  bucket = var.s3_bucket_name
+  website {
+    index_document = var.index_document
+    error_document = var.error_document
+  }
 }
 
 resource "aws_cloudfront_function" "staticsite-indexhandler" {
