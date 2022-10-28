@@ -154,7 +154,7 @@ resource "aws_s3_bucket_acl" "staticsite-s3" {
   acl    = "private"
 }
 
-resource "aws_s3_website_configuration" "staticsite-s3" {
+resource "aws_s3_bucket_website_configuration" "staticsite-s3" {
   bucket = var.s3_bucket_name
   website {
     index_document = var.index_document
