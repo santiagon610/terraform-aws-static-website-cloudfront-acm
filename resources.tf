@@ -103,8 +103,8 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
 }
 
 resource "aws_s3_bucket" "staticsite-s3" {
-  bucket           = var.s3_bucket_name
-  tags             = var.tags
+  bucket = var.s3_bucket_name
+  tags   = var.tags
   policy = jsonencode(
     {
       Id      = "PolicyForCloudFrontPrivateContent"
@@ -156,9 +156,13 @@ resource "aws_s3_bucket_acl" "staticsite-s3" {
 
 resource "aws_s3_bucket_website_configuration" "staticsite-s3" {
   bucket = var.s3_bucket_name
-  website {
-    index_document = var.index_document
-    error_document = var.error_document
+
+  index_document {
+    suffix = "var.index_document"
+  }
+
+  error_document {
+    suffix = var.error_document
   }
 }
 
