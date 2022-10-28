@@ -105,7 +105,6 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
 resource "aws_s3_bucket" "staticsite-s3" {
   bucket           = var.s3_bucket_name
   website_domain   = "s3-website-${var.aws_region}.amazonaws.com"
-  website_endpoint = "${var.s3_bucket_name}.s3-website-${var.aws_region}.amazonaws.com"
   tags             = var.tags
   policy = jsonencode(
     {
