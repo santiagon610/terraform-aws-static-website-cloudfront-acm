@@ -136,7 +136,7 @@ resource "aws_s3_bucket" "staticsite-s3" {
 }
 
 resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
-  bucket = aws_s3_bucket.staticsite-s3
+  bucket = var.s3_bucket_name
 
   cors_rule {
     allowed_headers = [
@@ -154,7 +154,7 @@ resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
 }
 
 resource "aws_s3_bucket_acl" "staticsite-s3" {
-  bucket = aws_s3_bucket.staticsite-s3
+  bucket = var.s3_bucket_name
   acl    = "private"
 
 }
