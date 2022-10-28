@@ -104,7 +104,6 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
 
 resource "aws_s3_bucket" "staticsite-s3" {
   bucket           = var.s3_bucket_name
-  acl              = "private"
   website_domain   = "s3-website-${var.aws_region}.amazonaws.com"
   website_endpoint = "${var.s3_bucket_name}.s3-website-${var.aws_region}.amazonaws.com"
   tags             = var.tags
@@ -154,6 +153,12 @@ resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
     expose_headers  = []
     max_age_seconds = 0
   }
+}
+
+resource "aws_s3_bucket_acl" "staticsite-s3" {
+  bucket = aws_s3_bucket.staticsite-s3
+  acl    = "private"
+
 }
 
 resource "aws_cloudfront_function" "staticsite-indexhandler" {
