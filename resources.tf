@@ -105,6 +105,10 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
 resource "aws_s3_bucket" "staticsite-s3" {
   bucket = var.s3_bucket_name
   tags   = var.tags
+}
+
+resource "aws_s3_bucket_policy" "staticsite-s3" {
+  bucket = var.s3_bucket_name
   policy = jsonencode(
     {
       Id      = "PolicyForCloudFrontPrivateContent"
@@ -128,7 +132,6 @@ resource "aws_s3_bucket" "staticsite-s3" {
       ]
     }
   )
-
 }
 
 resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
