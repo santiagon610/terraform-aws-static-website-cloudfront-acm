@@ -162,7 +162,7 @@ resource "aws_s3_bucket_website_configuration" "staticsite-s3" {
   }
 
   error_document {
-    suffix = var.error_document
+    key = var.error_document
   }
 }
 
