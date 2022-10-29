@@ -8,9 +8,6 @@ locals {
 
 resource "aws_cloudfront_origin_access_identity" "staticsite-oai" {
   comment = var.oai_comment
-  lifecycle {
-    ignore_changes = [etag]
-  }
 }
 
 resource "aws_acm_certificate" "staticsite-acm-cert" {
@@ -106,11 +103,12 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
 }
 
 resource "aws_s3_bucket" "staticsite-s3" {
-  bucket           = var.s3_bucket_name
-  acl              = "private"
-  website_domain   = "s3-website-${var.aws_region}.amazonaws.com"
-  website_endpoint = "${var.s3_bucket_name}.s3-website-${var.aws_region}.amazonaws.com"
-  tags             = var.tags
+  bucket = var.s3_bucket_name
+  tags   = var.tags
+}
+
+resource "aws_s3_bucket_policy" "staticsite-s3" {
+  bucket = var.s3_bucket_name
   policy = jsonencode(
     {
       Id      = "PolicyForCloudFrontPrivateContent"
@@ -134,11 +132,10 @@ resource "aws_s3_bucket" "staticsite-s3" {
       ]
     }
   )
+}
 
-  website {
-    index_document = var.index_document
-    error_document = var.error_document
-  }
+resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
+  bucket = var.s3_bucket_name
 
   cors_rule {
     allowed_headers = [
@@ -152,6 +149,23 @@ resource "aws_s3_bucket" "staticsite-s3" {
     ]
     expose_headers  = []
     max_age_seconds = 0
+  }
+}
+
+resource "aws_s3_bucket_acl" "staticsite-s3" {
+  bucket = var.s3_bucket_name
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_website_configuration" "staticsite-s3" {
+  bucket = var.s3_bucket_name
+
+  index_document {
+    suffix = "var.index_document"
+  }
+
+  error_document {
+    key = var.error_document
   }
 }
 
