@@ -209,20 +209,30 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
       Version = "2012-10-17"
       Statement = [
         {
-          Action   = "s3:ListBucket"
+          Action   = [
+            "s3:ListBucket",
+            "cloudfront:CreateInvalidation"
+          ]
           Effect   = "Allow"
-          Resource = aws_s3_bucket.staticsite-s3.arn
+          Resource = [
+            aws_s3_bucket.staticsite-s3.arn,
+            aws_cloudfront_distribution.staticsite-cf.arn
+          ]
         },
         {
           Action = [
             "s3:GetObject",
             "s3:PutObject",
             "s3:DeleteObject",
-            "s3:ListObjects",
-            "s3:ListObjectsV2"
+            "s3:ListObject*"
           ]
           Effect   = "Allow"
           Resource = "${aws_s3_bucket.staticsite-s3.arn}/*"
+        },
+        {
+          Action = "cloudfront:ListDistributions"
+          Effect = "Allow"
+          Resource = "*"
         }
       ]
     }

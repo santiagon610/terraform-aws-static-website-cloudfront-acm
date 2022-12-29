@@ -11,3 +11,9 @@ output "deployer_creds" {
   }
   sensitive = true
 }
+
+output "distribution_id" {
+  description = "Cloudfront distribution ID"
+  value       = aws_cloudfront_distribution.staticsite-cf.id
+  sensitive   = false
+}
