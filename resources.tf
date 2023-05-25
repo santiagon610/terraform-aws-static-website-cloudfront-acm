@@ -153,6 +153,7 @@ resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
 }
 
 resource "aws_s3_bucket_acl" "staticsite-s3" {
+  count = var.skip_acl ? 0 : 1
   bucket = var.s3_bucket_name
   acl    = "private"
 }
