@@ -86,3 +86,9 @@ variable "allowed_countries" {
   description = "Allowed countries to access Cloudfront hosted resources"
   default     = ["US", "CA", "GB", "MX", "IN", "DE", "NL", "FR", "BR", "JP", "SG", "TW", "KR", "CO", "ES", "AU", "CH", "IT", "PH", "HK", "SE", "CR"]
 }
+
+variable "skip_acl" {
+  type        = bool
+  description = "Skips creation of the ACL for accounts in which this is disallowed"
+  default     = false
+}
