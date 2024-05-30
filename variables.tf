@@ -92,3 +92,9 @@ variable "skip_acl" {
   description = "Skips creation of the ACL for accounts in which this is disallowed"
   default     = false
 }
+
+variable "ip_allow_list" {
+  type        = list(string)
+  description = "List of IP addresses allowed to access Cloudfront hosted resources"
+  default     = []
+}
