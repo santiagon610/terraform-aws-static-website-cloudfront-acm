@@ -60,7 +60,7 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
   aliases             = local.domain_list
   price_class         = "PriceClass_100"
   tags                = var.tags
-  web_acl_id = length(var.ip_allow_list) >= 1 ? aws_wafv2_web_acl.this.arn : null
+  web_acl_id = length(var.ip_allow_list) >= 1 ? aws_wafv2_web_acl.this[0].arn : null
   depends_on = [
     aws_acm_certificate_validation.staticsite-acm
   ]

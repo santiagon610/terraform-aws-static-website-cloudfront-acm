@@ -44,7 +44,7 @@ resource "aws_wafv2_web_acl" "this" {
 
     statement {
       ip_set_reference_statement {
-        arn = aws_wafv2_ip_set.this.arn
+        arn = aws_wafv2_ip_set.this[0].arn
       }
     }
 
