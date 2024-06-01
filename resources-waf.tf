@@ -36,7 +36,7 @@ resource "aws_wafv2_web_acl" "this" {
   scope       = "CLOUDFRONT"
 
   rule {
-    name     = "Honor IP Allow List"
+    name     = "allowed-ips-${local.sanitized_primary_domain}"
     priority = 1
     action {
       allow {}
