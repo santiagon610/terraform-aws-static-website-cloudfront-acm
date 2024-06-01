@@ -6,11 +6,11 @@ locals {
   s3_origin_id     = "${local.primary_domain}-s3_origin"
 }
 
-resource "aws_cloudfront_origin_access_identity" "this" {
+resource "aws_cloudfront_origin_access_identity" "staticsite-oai" {
   comment = var.oai_comment
 }
 
-resource "aws_acm_certificate" "this" {
+resource "aws_acm_certificate" "staticsite-acm-cert" {
   domain_name               = local.primary_domain
   validation_method         = "DNS"
   subject_alternative_names = local.san_list
@@ -20,7 +20,7 @@ resource "aws_acm_certificate" "this" {
   }
 }
 
-resource "aws_route53_record" "acm_validation" {
+resource "aws_route53_record" "staticsite-acm-cert-validate" {
   for_each = {
     for dvo in aws_acm_certificate.staticsite-acm-cert.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
@@ -36,14 +36,14 @@ resource "aws_route53_record" "acm_validation" {
   zone_id         = var.dns_zone_id
 }
 
-resource "aws_acm_certificate_validation" "this" {
+resource "aws_acm_certificate_validation" "staticsite-acm" {
   certificate_arn = aws_acm_certificate.staticsite-acm-cert.arn
   validation_record_fqdns = [
     for record in aws_route53_record.staticsite-acm-cert-validate : record.fqdn
   ]
 }
 
-resource "aws_cloudfront_distribution" "this" {
+resource "aws_cloudfront_distribution" "staticsite-cf" {
   origin {
     domain_name = aws_s3_bucket.staticsite-s3.bucket_regional_domain_name
     origin_id   = local.s3_origin_id
@@ -93,16 +93,13 @@ resource "aws_cloudfront_distribution" "this" {
     ssl_support_method             = "sni-only"
   }
 
-  dynamic "restrictions" {
-
-    for_each = var.allowed_countries == [] ? [] : [1]
-    content {
-      geo_restriction {
-        restriction_type = "whitelist"
-        locations        = var.allowed_countries
-      }
+  restrictions {
+    geo_restriction {
+      restriction_type = "whitelist"
+      locations        = var.allowed_countries
     }
   }
+
 }
 
 resource "aws_s3_bucket" "staticsite-s3" {
@@ -156,7 +153,7 @@ resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
 }
 
 resource "aws_s3_bucket_acl" "staticsite-s3" {
-  count  = var.skip_acl ? 0 : 1
+  count = var.skip_acl ? 0 : 1
   bucket = var.s3_bucket_name
   acl    = "private"
 }
@@ -213,11 +210,11 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
       Version = "2012-10-17"
       Statement = [
         {
-          Action = [
+          Action   = [
             "s3:ListBucket",
             "cloudfront:CreateInvalidation"
           ]
-          Effect = "Allow"
+          Effect   = "Allow"
           Resource = [
             aws_s3_bucket.staticsite-s3.arn,
             aws_cloudfront_distribution.staticsite-cf.arn
@@ -234,8 +231,8 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
           Resource = "${aws_s3_bucket.staticsite-s3.arn}/*"
         },
         {
-          Action   = "cloudfront:ListDistributions"
-          Effect   = "Allow"
+          Action = "cloudfront:ListDistributions"
+          Effect = "Allow"
           Resource = "*"
         }
       ]

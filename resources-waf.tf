@@ -11,7 +11,7 @@ resource "aws_wafv2_web_acl" "this" {
   count       = length(var.ip_allow_list) < 1 ? 1 : 0
   name        = var.staticsite_name
   description = "Web ACL for ${var.staticsite_name}"
-  scope       = "GLOBAL"
+  scope       = "CLOUDFRONT"
 
   default_action {
     block {}
