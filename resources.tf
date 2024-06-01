@@ -1,6 +1,7 @@
 locals {
   domain_list      = var.domain_list
   primary_domain   = var.domain_list[0]
+  sanitized_primary_domain = replace(local.primary_domain, ".", "-")
   domain_list_full = distinct(concat(tolist([local.primary_domain]), local.domain_list))
   san_list         = slice(local.domain_list_full, 1, length(local.domain_list_full))
   s3_origin_id     = "${local.primary_domain}-s3_origin"
@@ -60,6 +61,7 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
   aliases             = local.domain_list
   price_class         = "PriceClass_100"
   tags                = var.tags
+  web_acl_id = length(var.ip_allow_list) >= 1 ? aws_wafv2_web_acl.this[0].arn : null
   depends_on = [
     aws_acm_certificate_validation.staticsite-acm
   ]
@@ -238,4 +240,51 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
       ]
     }
   )
+}
+
+resource "aws_wafv2_ip_set" "this" {
+  count              = length(var.ip_allow_list) >= 1 ? 1 : 0
+  name               = "iplist-${local.sanitized_primary_domain}"
+  scope              = "CLOUDFRONT"
+  ip_address_version = "IPV4"
+  addresses          = var.ip_allow_list
+  tags               = var.tags
+}
+
+resource "aws_wafv2_web_acl" "this" {
+  count       = length(var.ip_allow_list) >= 1 ? 1 : 0
+  name        = "rulegroup-${local.sanitized_primary_domain}"
+  description = "Rule Group for ${var.staticsite_name}"
+  scope       = "CLOUDFRONT"
+
+  rule {
+    name     = "allowed-ips-${local.sanitized_primary_domain}"
+    priority = 1
+    action {
+      allow {}
+    }
+
+    statement {
+      ip_set_reference_statement {
+        arn = aws_wafv2_ip_set.this[0].arn
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "waf-rulegroup-ipallow-${local.sanitized_primary_domain}"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  default_action {
+    block {}
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "waf-${local.sanitized_primary_domain}"
+    sampled_requests_enabled   = true
+  }
+  tags = var.tags
 }
