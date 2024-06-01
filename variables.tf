@@ -95,6 +95,6 @@ variable "skip_acl" {
 
 variable "ip_allow_list" {
   type        = list(string)
-  description = "List of IP addresses allowed to access Cloudfront hosted resources"
+  description = "List of IP addresses allowed to access Cloudfront hosted resources. If an empty list, all IPs within the allowed countries are allowed to access the static site."
   default     = []
 }
