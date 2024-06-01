@@ -9,7 +9,7 @@ resource "aws_wafv2_ip_set" "this" {
 
 resource "aws_wafv2_web_acl" "this" {
   count       = length(var.ip_allow_list) < 1 ? 1 : 0
-  name        = "webacl-${local.primary_domain}"
+  name        = "webacl-${replace(local.primary_domain, ".", "-")}"
   description = "Web ACL for ${var.staticsite_name}"
   scope       = "CLOUDFRONT"
 
