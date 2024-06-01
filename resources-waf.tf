@@ -1,7 +1,7 @@
 resource "aws_wafv2_ip_set" "this" {
   count              = length(var.ip_allow_list) < 1 ? 1 : 0
   name               = "iplist_${local.primary_domain}"
-  scope              = "GLOBAL"
+  scope              = "CLOUDFRONT"
   ip_address_version = "IPV4"
   addresses          = var.ip_allow_list
   tags               = var.tags
