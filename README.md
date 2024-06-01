@@ -11,6 +11,7 @@ Want to host a static website on AWS simply and (theoretically) cheaply? Let S3,
 - Route 53 records
 - Automatic certificate verification via Route 53
 - Lambda@Edge to handle `index.html` in subdirectories
+- WAFv2 IP Allow List
 
 ## Terraform versions
 
@@ -21,7 +22,8 @@ I've tested this on 0.13 onward, and seems to be fine. If you find an issue, fee
 ```hcl
 # Production Website
 module "prod_website" {
-  source          = "../../modules/aws_static_site"
+  source          = "santiagon610/static-website-cloudfront-acm/aws"
+  version         = "~> 0.1"
   staticsite_name = "Production Website"
   aws_region      = "us-west-2"
   oai_comment     = "prod-website-oai"
@@ -41,6 +43,10 @@ module "prod_website" {
   deployer_iam_user        = true
   deployer_iam_user_name   = "prod-website-deployer"
   cloudfront_index_handler = true
+  ip_allow_list = [
+    "1.2.3.4/32",
+    "2.3.4.0/24"
+  ]
 }
 ```
 
