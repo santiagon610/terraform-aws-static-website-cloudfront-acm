@@ -15,7 +15,7 @@ Want to host a static website on AWS simply and (theoretically) cheaply? Let S3,
 
 ## Terraform versions
 
-I've tested this on 0.13 onward, and seems to be fine. If you find an issue, feel free to raise an issue.
+I've tested this on 1.5.5, and seems to be fine. If you find an issue, feel free to raise an issue.
 
 ### Example Usage
 
@@ -58,6 +58,7 @@ module "prod_website" {
 
 - `deployer_creds`: When this and `deployer_iam_user` are set to `true`, Outputs the `access_key` and `secret_key` of the created IAM user.
   - Note: If `deployer_iam_user` is set to false, this will render as `undefined`
+- `distribution_id`: Shows the ID of the created CloudFront distribution. Helpful with automation for invalidating cache.
 
 ## Authors
 
