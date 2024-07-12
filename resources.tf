@@ -1,17 +1,17 @@
 locals {
-  domain_list      = var.domain_list
-  primary_domain   = var.domain_list[0]
+  domain_list              = var.domain_list
+  primary_domain           = var.domain_list[0]
   sanitized_primary_domain = replace(local.primary_domain, ".", "-")
-  domain_list_full = distinct(concat(tolist([local.primary_domain]), local.domain_list))
-  san_list         = slice(local.domain_list_full, 1, length(local.domain_list_full))
-  s3_origin_id     = "${local.primary_domain}-s3_origin"
+  domain_list_full         = distinct(concat(tolist([local.primary_domain]), local.domain_list))
+  san_list                 = slice(local.domain_list_full, 1, length(local.domain_list_full))
+  s3_origin_id             = "${local.primary_domain}-s3_origin"
 }
 
-resource "aws_cloudfront_origin_access_identity" "staticsite-oai" {
+resource "aws_cloudfront_origin_access_identity" "this" {
   comment = var.oai_comment
 }
 
-resource "aws_acm_certificate" "staticsite-acm-cert" {
+resource "aws_acm_certificate" "this" {
   domain_name               = local.primary_domain
   validation_method         = "DNS"
   subject_alternative_names = local.san_list
@@ -21,9 +21,9 @@ resource "aws_acm_certificate" "staticsite-acm-cert" {
   }
 }
 
-resource "aws_route53_record" "staticsite-acm-cert-validate" {
+resource "aws_route53_record" "cert_validation" {
   for_each = {
-    for dvo in aws_acm_certificate.staticsite-acm-cert.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -37,20 +37,20 @@ resource "aws_route53_record" "staticsite-acm-cert-validate" {
   zone_id         = var.dns_zone_id
 }
 
-resource "aws_acm_certificate_validation" "staticsite-acm" {
-  certificate_arn = aws_acm_certificate.staticsite-acm-cert.arn
+resource "aws_acm_certificate_validation" "this" {
+  certificate_arn = aws_acm_certificate.this.arn
   validation_record_fqdns = [
-    for record in aws_route53_record.staticsite-acm-cert-validate : record.fqdn
+    for record in aws_route53_record.cert_validation : record.fqdn
   ]
 }
 
-resource "aws_cloudfront_distribution" "staticsite-cf" {
+resource "aws_cloudfront_distribution" "this" {
   origin {
-    domain_name = aws_s3_bucket.staticsite-s3.bucket_regional_domain_name
+    domain_name = aws_s3_bucket.this.bucket_regional_domain_name
     origin_id   = local.s3_origin_id
 
     s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.staticsite-oai.cloudfront_access_identity_path
+      origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
     }
   }
 
@@ -61,9 +61,9 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
   aliases             = local.domain_list
   price_class         = "PriceClass_100"
   tags                = var.tags
-  web_acl_id = length(var.ip_allow_list) >= 1 ? aws_wafv2_web_acl.this[0].arn : null
+  web_acl_id          = length(var.ip_allow_list) >= 1 ? aws_wafv2_web_acl.this[0].arn : null
   depends_on = [
-    aws_acm_certificate_validation.staticsite-acm
+    aws_acm_certificate_validation.this
   ]
 
   default_cache_behavior {
@@ -84,14 +84,14 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
       for_each = var.cloudfront_index_handler == true ? [1] : []
       content {
         event_type   = "viewer-request"
-        function_arn = aws_cloudfront_function.staticsite-indexhandler.arn
+        function_arn = aws_cloudfront_function.index_handler.arn
       }
     }
   }
 
   viewer_certificate {
     cloudfront_default_certificate = false
-    acm_certificate_arn            = aws_acm_certificate.staticsite-acm-cert.arn
+    acm_certificate_arn            = aws_acm_certificate.this.arn
     ssl_support_method             = "sni-only"
   }
 
@@ -104,12 +104,12 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
 
 }
 
-resource "aws_s3_bucket" "staticsite-s3" {
+resource "aws_s3_bucket" "this" {
   bucket = var.s3_bucket_name
   tags   = var.tags
 }
 
-resource "aws_s3_bucket_policy" "staticsite-s3" {
+resource "aws_s3_bucket_policy" "this" {
   bucket = var.s3_bucket_name
   policy = jsonencode(
     {
@@ -128,7 +128,7 @@ resource "aws_s3_bucket_policy" "staticsite-s3" {
             "arn:aws:s3:::${var.s3_bucket_name}"
           ]
           Principal = {
-            AWS = aws_cloudfront_origin_access_identity.staticsite-oai.iam_arn
+            AWS = aws_cloudfront_origin_access_identity.this.iam_arn
           }
         }
       ]
@@ -136,7 +136,7 @@ resource "aws_s3_bucket_policy" "staticsite-s3" {
   )
 }
 
-resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
+resource "aws_s3_bucket_cors_configuration" "this" {
   bucket = var.s3_bucket_name
 
   cors_rule {
@@ -154,13 +154,13 @@ resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
   }
 }
 
-resource "aws_s3_bucket_acl" "staticsite-s3" {
-  count = var.skip_acl ? 0 : 1
+resource "aws_s3_bucket_acl" "this" {
+  count  = var.skip_acl ? 0 : 1
   bucket = var.s3_bucket_name
   acl    = "private"
 }
 
-resource "aws_s3_bucket_website_configuration" "staticsite-s3" {
+resource "aws_s3_bucket_website_configuration" "this" {
   bucket = var.s3_bucket_name
 
   index_document {
@@ -172,54 +172,54 @@ resource "aws_s3_bucket_website_configuration" "staticsite-s3" {
   }
 }
 
-resource "aws_cloudfront_function" "staticsite-indexhandler" {
+resource "aws_cloudfront_function" "index_handler" {
   name    = "${var.oai_comment}_index_handler"
   runtime = "cloudfront-js-1.0"
   publish = true
   code    = file("${path.module}/cloudfront_index_handler.js")
 }
 
-resource "aws_route53_record" "staticsite-route53-a" {
+resource "aws_route53_record" "cloudfront_a" {
   for_each        = toset(local.domain_list)
   allow_overwrite = true
   name            = each.key
   zone_id         = var.dns_zone_id
   type            = "A"
   alias {
-    name                   = aws_cloudfront_distribution.staticsite-cf.domain_name
-    zone_id                = aws_cloudfront_distribution.staticsite-cf.hosted_zone_id
+    name                   = aws_cloudfront_distribution.this.domain_name
+    zone_id                = aws_cloudfront_distribution.this.hosted_zone_id
     evaluate_target_health = true
   }
 }
 
-resource "aws_iam_user" "staticsite-iam-deployer" {
+resource "aws_iam_user" "deployer" {
   count = var.deployer_iam_user ? 1 : 0
   name  = var.deployer_iam_user_name
   tags  = var.tags
 }
 
-resource "aws_iam_access_key" "staticsite-iam-deployer" {
+resource "aws_iam_access_key" "deployer" {
   count = var.deployer_iam_user ? 1 : 0
-  user  = aws_iam_user.staticsite-iam-deployer[0].name
+  user  = aws_iam_user.deployer[0].name
 }
 
-resource "aws_iam_user_policy" "staticsite-iam-deployer" {
+resource "aws_iam_user_policy" "deployer" {
   count = var.deployer_iam_user ? 1 : 0
-  name  = "${aws_iam_user.staticsite-iam-deployer[0].name}_user_policy"
-  user  = aws_iam_user.staticsite-iam-deployer[0].name
+  name  = "${aws_iam_user.deployer[0].name}_user_policy"
+  user  = aws_iam_user.deployer[0].name
   policy = jsonencode(
     {
       Version = "2012-10-17"
       Statement = [
         {
-          Action   = [
+          Action = [
             "s3:ListBucket",
             "cloudfront:CreateInvalidation"
           ]
-          Effect   = "Allow"
+          Effect = "Allow"
           Resource = [
-            aws_s3_bucket.staticsite-s3.arn,
-            aws_cloudfront_distribution.staticsite-cf.arn
+            aws_s3_bucket.this.arn,
+            aws_cloudfront_distribution.this.arn
           ]
         },
         {
@@ -230,11 +230,11 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
             "s3:ListObject*"
           ]
           Effect   = "Allow"
-          Resource = "${aws_s3_bucket.staticsite-s3.arn}/*"
+          Resource = "${aws_s3_bucket.this.arn}/*"
         },
         {
-          Action = "cloudfront:ListDistributions"
-          Effect = "Allow"
+          Action   = "cloudfront:ListDistributions"
+          Effect   = "Allow"
           Resource = "*"
         }
       ]

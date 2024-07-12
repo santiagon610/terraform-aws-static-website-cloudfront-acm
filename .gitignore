@@ -1,0 +1,3 @@
+.terraform-version
+.terraform/**
+.terraform.lock.hcl
