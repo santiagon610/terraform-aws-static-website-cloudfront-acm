@@ -9,6 +9,16 @@ moved {
 }
 
 moved {
+  from = aws_route53_record.staticsite-acm-cert-validate
+  to   = aws_route53_record.cert_validation
+}
+
+moved {
+  from = aws_acm_certificate_validation.staticsite-acm
+  to   = aws_acm_certificate_validation.this
+}
+
+moved {
   from = aws_cloudfront_distribution.staticsite-cf
   to   = aws_cloudfront_distribution.this
 }
