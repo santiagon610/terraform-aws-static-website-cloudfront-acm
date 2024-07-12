@@ -46,7 +46,7 @@ resource "aws_acm_certificate_validation" "this" {
 
 resource "aws_cloudfront_distribution" "this" {
   origin {
-    domain_name = aws_s3_bucket.staticsite-s3.bucket_regional_domain_name
+    domain_name = aws_s3_bucket.this.bucket_regional_domain_name
     origin_id   = local.s3_origin_id
 
     s3_origin_config {
@@ -104,7 +104,7 @@ resource "aws_cloudfront_distribution" "this" {
 
 }
 
-resource "aws_s3_bucket" "staticsite-s3" {
+resource "aws_s3_bucket" "this" {
   bucket = var.s3_bucket_name
   tags   = var.tags
 }
@@ -218,7 +218,7 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
           ]
           Effect = "Allow"
           Resource = [
-            aws_s3_bucket.staticsite-s3.arn,
+            aws_s3_bucket.this.arn,
             aws_cloudfront_distribution.this.arn
           ]
         },
@@ -230,7 +230,7 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
             "s3:ListObject*"
           ]
           Effect   = "Allow"
-          Resource = "${aws_s3_bucket.staticsite-s3.arn}/*"
+          Resource = "${aws_s3_bucket.this.arn}/*"
         },
         {
           Action   = "cloudfront:ListDistributions"

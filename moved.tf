@@ -22,3 +22,8 @@ moved {
   from = aws_cloudfront_distribution.staticsite-cf
   to   = aws_cloudfront_distribution.this
 }
+
+moved {
+  from = aws_s3_bucket.staticsite-s3
+  to   = aws_s3_bucket.this
+}
