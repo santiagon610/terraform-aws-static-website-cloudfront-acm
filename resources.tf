@@ -192,21 +192,21 @@ resource "aws_route53_record" "cloudfront_a" {
   }
 }
 
-resource "aws_iam_user" "staticsite-iam-deployer" {
+resource "aws_iam_user" "deployer" {
   count = var.deployer_iam_user ? 1 : 0
   name  = var.deployer_iam_user_name
   tags  = var.tags
 }
 
-resource "aws_iam_access_key" "staticsite-iam-deployer" {
+resource "aws_iam_access_key" "deployer" {
   count = var.deployer_iam_user ? 1 : 0
-  user  = aws_iam_user.staticsite-iam-deployer[0].name
+  user  = aws_iam_user.deployer[0].name
 }
 
-resource "aws_iam_user_policy" "staticsite-iam-deployer" {
+resource "aws_iam_user_policy" "deployer" {
   count = var.deployer_iam_user ? 1 : 0
-  name  = "${aws_iam_user.staticsite-iam-deployer[0].name}_user_policy"
-  user  = aws_iam_user.staticsite-iam-deployer[0].name
+  name  = "${aws_iam_user.deployer[0].name}_user_policy"
+  user  = aws_iam_user.deployer[0].name
   policy = jsonencode(
     {
       Version = "2012-10-17"

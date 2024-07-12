@@ -57,3 +57,8 @@ moved {
   from = aws_route53_record.staticsite-route53-a
   to   = aws_route53_record.cloudfront_a
 }
+
+moved {
+  from = aws_iam_user.staticsite-iam-deployer
+  to   = aws_iam_user.deployer
+}
