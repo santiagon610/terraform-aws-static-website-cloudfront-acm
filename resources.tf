@@ -1,10 +1,10 @@
 locals {
-  domain_list      = var.domain_list
-  primary_domain   = var.domain_list[0]
+  domain_list              = var.domain_list
+  primary_domain           = var.domain_list[0]
   sanitized_primary_domain = replace(local.primary_domain, ".", "-")
-  domain_list_full = distinct(concat(tolist([local.primary_domain]), local.domain_list))
-  san_list         = slice(local.domain_list_full, 1, length(local.domain_list_full))
-  s3_origin_id     = "${local.primary_domain}-s3_origin"
+  domain_list_full         = distinct(concat(tolist([local.primary_domain]), local.domain_list))
+  san_list                 = slice(local.domain_list_full, 1, length(local.domain_list_full))
+  s3_origin_id             = "${local.primary_domain}-s3_origin"
 }
 
 resource "aws_cloudfront_origin_access_identity" "this" {
@@ -61,7 +61,7 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
   aliases             = local.domain_list
   price_class         = "PriceClass_100"
   tags                = var.tags
-  web_acl_id = length(var.ip_allow_list) >= 1 ? aws_wafv2_web_acl.this[0].arn : null
+  web_acl_id          = length(var.ip_allow_list) >= 1 ? aws_wafv2_web_acl.this[0].arn : null
   depends_on = [
     aws_acm_certificate_validation.staticsite-acm
   ]
@@ -155,7 +155,7 @@ resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
 }
 
 resource "aws_s3_bucket_acl" "staticsite-s3" {
-  count = var.skip_acl ? 0 : 1
+  count  = var.skip_acl ? 0 : 1
   bucket = var.s3_bucket_name
   acl    = "private"
 }
@@ -212,11 +212,11 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
       Version = "2012-10-17"
       Statement = [
         {
-          Action   = [
+          Action = [
             "s3:ListBucket",
             "cloudfront:CreateInvalidation"
           ]
-          Effect   = "Allow"
+          Effect = "Allow"
           Resource = [
             aws_s3_bucket.staticsite-s3.arn,
             aws_cloudfront_distribution.staticsite-cf.arn
@@ -233,8 +233,8 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
           Resource = "${aws_s3_bucket.staticsite-s3.arn}/*"
         },
         {
-          Action = "cloudfront:ListDistributions"
-          Effect = "Allow"
+          Action   = "cloudfront:ListDistributions"
+          Effect   = "Allow"
           Resource = "*"
         }
       ]
