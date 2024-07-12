@@ -14,6 +14,6 @@ output "deployer_creds" {
 
 output "distribution_id" {
   description = "Cloudfront distribution ID"
-  value       = aws_cloudfront_distribution.staticsite-cf.id
+  value       = aws_cloudfront_distribution.this.id
   sensitive   = false
 }

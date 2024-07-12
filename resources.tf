@@ -21,7 +21,7 @@ resource "aws_acm_certificate" "this" {
   }
 }
 
-resource "aws_route53_record" "staticsite-acm-cert-validate" {
+resource "aws_route53_record" "cert_validation" {
   for_each = {
     for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
@@ -37,14 +37,14 @@ resource "aws_route53_record" "staticsite-acm-cert-validate" {
   zone_id         = var.dns_zone_id
 }
 
-resource "aws_acm_certificate_validation" "staticsite-acm" {
+resource "aws_acm_certificate_validation" "this" {
   certificate_arn = aws_acm_certificate.this.arn
   validation_record_fqdns = [
-    for record in aws_route53_record.staticsite-acm-cert-validate : record.fqdn
+    for record in aws_route53_record.cert_validation : record.fqdn
   ]
 }
 
-resource "aws_cloudfront_distribution" "staticsite-cf" {
+resource "aws_cloudfront_distribution" "this" {
   origin {
     domain_name = aws_s3_bucket.staticsite-s3.bucket_regional_domain_name
     origin_id   = local.s3_origin_id
@@ -63,7 +63,7 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
   tags                = var.tags
   web_acl_id          = length(var.ip_allow_list) >= 1 ? aws_wafv2_web_acl.this[0].arn : null
   depends_on = [
-    aws_acm_certificate_validation.staticsite-acm
+    aws_acm_certificate_validation.this
   ]
 
   default_cache_behavior {
@@ -186,8 +186,8 @@ resource "aws_route53_record" "staticsite-route53-a" {
   zone_id         = var.dns_zone_id
   type            = "A"
   alias {
-    name                   = aws_cloudfront_distribution.staticsite-cf.domain_name
-    zone_id                = aws_cloudfront_distribution.staticsite-cf.hosted_zone_id
+    name                   = aws_cloudfront_distribution.this.domain_name
+    zone_id                = aws_cloudfront_distribution.this.hosted_zone_id
     evaluate_target_health = true
   }
 }
@@ -219,7 +219,7 @@ resource "aws_iam_user_policy" "staticsite-iam-deployer" {
           Effect = "Allow"
           Resource = [
             aws_s3_bucket.staticsite-s3.arn,
-            aws_cloudfront_distribution.staticsite-cf.arn
+            aws_cloudfront_distribution.this.arn
           ]
         },
         {
