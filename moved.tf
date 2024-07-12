@@ -62,3 +62,13 @@ moved {
   from = aws_iam_user.staticsite-iam-deployer
   to   = aws_iam_user.deployer
 }
+
+moved {
+  from = aws_iam_access_key.staticsite-iam-deployer
+  to   = aws_iam_access_key.deployer
+}
+
+moved {
+  from = aws_iam_user_policy.staticsite-iam-deployer
+  to   = aws_iam_user_policy.deployer
+}
