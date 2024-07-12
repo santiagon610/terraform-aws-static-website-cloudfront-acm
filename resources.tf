@@ -84,7 +84,7 @@ resource "aws_cloudfront_distribution" "this" {
       for_each = var.cloudfront_index_handler == true ? [1] : []
       content {
         event_type   = "viewer-request"
-        function_arn = aws_cloudfront_function.staticsite-indexhandler.arn
+        function_arn = aws_cloudfront_function.index_handler.arn
       }
     }
   }
@@ -109,7 +109,7 @@ resource "aws_s3_bucket" "this" {
   tags   = var.tags
 }
 
-resource "aws_s3_bucket_policy" "staticsite-s3" {
+resource "aws_s3_bucket_policy" "this" {
   bucket = var.s3_bucket_name
   policy = jsonencode(
     {
@@ -136,7 +136,7 @@ resource "aws_s3_bucket_policy" "staticsite-s3" {
   )
 }
 
-resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
+resource "aws_s3_bucket_cors_configuration" "this" {
   bucket = var.s3_bucket_name
 
   cors_rule {
@@ -154,13 +154,13 @@ resource "aws_s3_bucket_cors_configuration" "staticsite-s3" {
   }
 }
 
-resource "aws_s3_bucket_acl" "staticsite-s3" {
+resource "aws_s3_bucket_acl" "this" {
   count  = var.skip_acl ? 0 : 1
   bucket = var.s3_bucket_name
   acl    = "private"
 }
 
-resource "aws_s3_bucket_website_configuration" "staticsite-s3" {
+resource "aws_s3_bucket_website_configuration" "this" {
   bucket = var.s3_bucket_name
 
   index_document {
@@ -172,14 +172,14 @@ resource "aws_s3_bucket_website_configuration" "staticsite-s3" {
   }
 }
 
-resource "aws_cloudfront_function" "staticsite-indexhandler" {
+resource "aws_cloudfront_function" "index_handler" {
   name    = "${var.oai_comment}_index_handler"
   runtime = "cloudfront-js-1.0"
   publish = true
   code    = file("${path.module}/cloudfront_index_handler.js")
 }
 
-resource "aws_route53_record" "staticsite-route53-a" {
+resource "aws_route53_record" "cloudfront_a" {
   for_each        = toset(local.domain_list)
   allow_overwrite = true
   name            = each.key

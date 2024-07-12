@@ -27,3 +27,33 @@ moved {
   from = aws_s3_bucket.staticsite-s3
   to   = aws_s3_bucket.this
 }
+
+moved {
+  from = aws_s3_bucket_policy.staticsite-s3
+  to   = aws_s3_bucket_policy.this
+}
+
+moved {
+  from = aws_s3_bucket_cors_configuration.staticsite-s3
+  to   = aws_s3_bucket_cors_configuration.this
+}
+
+moved {
+  from = aws_s3_bucket_acl.staticsite-s3
+  to   = aws_s3_bucket_acl.this
+}
+
+moved {
+  from = aws_s3_bucket_website_configuration.staticsite-s3
+  to   = aws_s3_bucket_website_configuration.this
+}
+
+moved {
+  from = aws_cloudfront_function.staticsite-indexhandler
+  to   = aws_cloudfront_function.index_handler
+}
+
+moved {
+  from = aws_route53_record.staticsite-route53-a
+  to   = aws_route53_record.cloudfront_a
+}
