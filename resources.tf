@@ -11,7 +11,7 @@ resource "aws_cloudfront_origin_access_identity" "this" {
   comment = var.oai_comment
 }
 
-resource "aws_acm_certificate" "staticsite-acm-cert" {
+resource "aws_acm_certificate" "this" {
   domain_name               = local.primary_domain
   validation_method         = "DNS"
   subject_alternative_names = local.san_list
@@ -23,7 +23,7 @@ resource "aws_acm_certificate" "staticsite-acm-cert" {
 
 resource "aws_route53_record" "staticsite-acm-cert-validate" {
   for_each = {
-    for dvo in aws_acm_certificate.staticsite-acm-cert.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.this.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
       type   = dvo.resource_record_type
@@ -38,7 +38,7 @@ resource "aws_route53_record" "staticsite-acm-cert-validate" {
 }
 
 resource "aws_acm_certificate_validation" "staticsite-acm" {
-  certificate_arn = aws_acm_certificate.staticsite-acm-cert.arn
+  certificate_arn = aws_acm_certificate.this.arn
   validation_record_fqdns = [
     for record in aws_route53_record.staticsite-acm-cert-validate : record.fqdn
   ]
@@ -91,7 +91,7 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
 
   viewer_certificate {
     cloudfront_default_certificate = false
-    acm_certificate_arn            = aws_acm_certificate.staticsite-acm-cert.arn
+    acm_certificate_arn            = aws_acm_certificate.this.arn
     ssl_support_method             = "sni-only"
   }
 
