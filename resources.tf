@@ -50,7 +50,7 @@ resource "aws_cloudfront_distribution" "staticsite-cf" {
     origin_id   = local.s3_origin_id
 
     s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.staticsite-oai.cloudfront_access_identity_path
+      origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
     }
   }
 
@@ -128,7 +128,7 @@ resource "aws_s3_bucket_policy" "staticsite-s3" {
             "arn:aws:s3:::${var.s3_bucket_name}"
           ]
           Principal = {
-            AWS = aws_cloudfront_origin_access_identity.staticsite-oai.iam_arn
+            AWS = aws_cloudfront_origin_access_identity.this.iam_arn
           }
         }
       ]
