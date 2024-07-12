@@ -7,7 +7,7 @@ locals {
   s3_origin_id     = "${local.primary_domain}-s3_origin"
 }
 
-resource "aws_cloudfront_origin_access_identity" "staticsite-oai" {
+resource "aws_cloudfront_origin_access_identity" "this" {
   comment = var.oai_comment
 }
 
