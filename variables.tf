@@ -81,6 +81,12 @@ variable "cloudfront_index_handler" {
   default     = true
 }
 
+variable "cloudfront_index_redirect" {
+  type        = bool
+  description = "With cloudfront_index_handler, redirect (301) extensionless paths such as /docs to /docs/ instead of serving /docs/index.html in place, so relative links on that page resolve correctly"
+  default     = false
+}
+
 variable "allowed_countries" {
   type        = list(string)
   description = "Allowed countries to access Cloudfront hosted resources"

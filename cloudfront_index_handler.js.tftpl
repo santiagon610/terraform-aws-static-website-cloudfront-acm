@@ -1,0 +1,39 @@
+// https://github.com/aws-samples/amazon-cloudfront-functions/blob/main/url-rewrite-single-page-apps/index.js
+
+function handler(event) {
+  var request = event.request;
+  var uri = request.uri;
+
+  // Check whether the URI is missing a file name.
+  if (uri.endsWith("/")) {
+    request.uri += "index.html";
+  }
+  // Check whether the URI is missing a file extension.
+  else if (!uri.includes(".")) {
+%{ if redirect_to_trailing_slash ~}
+    // Redirect to the directory URL, so relative links on its index page
+    // resolve against the directory rather than its parent.
+    var location = uri + "/";
+    var query = [];
+    for (var key in request.querystring) {
+      var param = request.querystring[key];
+      var values = param.multiValue ? param.multiValue : [param];
+      for (var i = 0; i < values.length; i++) {
+        query.push(values[i].value === "" ? key : key + "=" + values[i].value);
+      }
+    }
+    if (query.length > 0) {
+      location += "?" + query.join("&");
+    }
+    return {
+      statusCode: 301,
+      statusDescription: "Moved Permanently",
+      headers: { location: { value: location } },
+    };
+%{ else ~}
+    request.uri += "/index.html";
+%{ endif ~}
+  }
+
+  return request;
+}

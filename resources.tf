@@ -176,7 +176,9 @@ resource "aws_cloudfront_function" "index_handler" {
   name    = "${var.oai_comment}_index_handler"
   runtime = "cloudfront-js-1.0"
   publish = true
-  code    = file("${path.module}/cloudfront_index_handler.js")
+  code = templatefile("${path.module}/cloudfront_index_handler.js.tftpl", {
+    redirect_to_trailing_slash = var.cloudfront_index_redirect
+  })
 }
 
 resource "aws_route53_record" "cloudfront_a" {
