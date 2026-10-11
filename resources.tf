@@ -164,7 +164,7 @@ resource "aws_s3_bucket_website_configuration" "this" {
   bucket = var.s3_bucket_name
 
   index_document {
-    suffix = "var.index_document"
+    suffix = var.index_document
   }
 
   error_document {
