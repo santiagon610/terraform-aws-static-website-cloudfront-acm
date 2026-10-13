@@ -89,6 +89,18 @@ resource "aws_cloudfront_distribution" "this" {
     }
   }
 
+  # CloudFront reads the bucket's REST endpoint, which ignores the S3 website
+  # error_document, so error pages have to be configured here.
+  dynamic "custom_error_response" {
+    for_each = toset(var.error_response_codes)
+    content {
+      error_code            = custom_error_response.value
+      response_code         = 404
+      response_page_path    = "/${var.error_document}"
+      error_caching_min_ttl = 10
+    }
+  }
+
   viewer_certificate {
     cloudfront_default_certificate = false
     acm_certificate_arn            = aws_acm_certificate.this.arn
@@ -164,7 +176,7 @@ resource "aws_s3_bucket_website_configuration" "this" {
   bucket = var.s3_bucket_name
 
   index_document {
-    suffix = "var.index_document"
+    suffix = var.index_document
   }
 
   error_document {
@@ -176,7 +188,9 @@ resource "aws_cloudfront_function" "index_handler" {
   name    = "${var.oai_comment}_index_handler"
   runtime = "cloudfront-js-1.0"
   publish = true
-  code    = file("${path.module}/cloudfront_index_handler.js")
+  code = templatefile("${path.module}/cloudfront_index_handler.js.tftpl", {
+    redirect_to_trailing_slash = var.cloudfront_index_redirect
+  })
 }
 
 resource "aws_route53_record" "cloudfront_a" {

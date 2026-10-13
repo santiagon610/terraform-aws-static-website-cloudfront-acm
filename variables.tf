@@ -51,6 +51,12 @@ variable "error_document" {
   default     = "error.html"
 }
 
+variable "error_response_codes" {
+  type        = list(number)
+  description = "Origin status codes for which CloudFront serves error_document with a 404 status, e.g. [403, 404]. Empty leaves CloudFront's default error responses"
+  default     = []
+}
+
 variable "dns_zone_id" {
   type        = string
   description = "AWS Route 53 zone ID for DNS zone into which records will be placed"
@@ -77,8 +83,14 @@ variable "deployer_iam_user_name" {
 
 variable "cloudfront_index_handler" {
   type        = bool
-  description = "Create Lambda@Edge function to handle index files for subdirectories"
+  description = "Create a CloudFront Function to handle index files for subdirectories"
   default     = true
+}
+
+variable "cloudfront_index_redirect" {
+  type        = bool
+  description = "With cloudfront_index_handler, redirect (301) extensionless paths such as /docs to /docs/ instead of serving /docs/index.html in place, so relative links on that page resolve correctly"
+  default     = false
 }
 
 variable "allowed_countries" {
